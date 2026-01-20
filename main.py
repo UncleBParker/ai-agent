@@ -16,10 +16,20 @@ def main():
     contents = "Why is Boot.dev such a great place to learn backend development? Use one paragraph maximum."
 
     response = client.models.generate_content(model='gemini-2.5-flash', contents=contents)
+    
+    usage_metadata = response.usage_metadata
+    if usage_metadata == None:
+        raise RuntimeError("usage_metadata == None / Failed API Request")
+    
+    prompt_token_count = usage_metadata.prompt_token_count
+    canidates_token_count = usage_metadata.candidates_token_count
 
-    print(f"{contents}")
+    print(f"User Prompt: {contents}")
 
-    print(f"{response.text}")
+    print(f"Prompt tokens: {prompt_token_count}")
+    print(f"Response tokens: {canidates_token_count}")
+
+    print(f"Response:\n{response.text}")
 
 
 
