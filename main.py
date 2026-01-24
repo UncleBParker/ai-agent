@@ -27,10 +27,9 @@ def main():
     print("\nRunning ai-agent!")
 
     args = parse_args()
-    contents = args.user_prompt
-    messages = [types.Content(role="user", parts=[types.Part(text=args.user_prompt)])]
+    user_prompt = args.user_prompt
+    messages = [types.Content(role="user", parts=[types.Part(text=user_prompt)])]
 
-    print(f"User Prompt: {contents}\n")
 
     try:
         response = client.models.generate_content(
@@ -44,8 +43,10 @@ def main():
     prompt_token_count = usage_metadata.prompt_token_count
     canidates_token_count = usage_metadata.candidates_token_count
 
-    print(f"Prompt tokens: {prompt_token_count}")
-    print(f"Response tokens: {canidates_token_count}")
+    if args.verbose:
+        print(f"\nUser prompt: {user_prompt}\n")   
+        print(f"Prompt tokens: {prompt_token_count}")
+        print(f"Response tokens: {canidates_token_count}\n")
     print(f"Response:\n{response.text}\n")
 
 
