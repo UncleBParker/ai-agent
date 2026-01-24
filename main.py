@@ -2,6 +2,8 @@ import os
 import argparse
 from dotenv import load_dotenv
 from google import genai
+from google.genai import types
+
 
 load_dotenv()
 api_key = os.environ.get("GEMINI_API_KEY")
@@ -12,10 +14,13 @@ if not api_key:
     )
 client = genai.Client(api_key=api_key)
 
+
 def parse_args():
     parser = argparse.ArgumentParser(description="Bootdev Chatbot")
     parser.add_argument("user_prompt", type=str, help="Prompt to send to Gemini")
+    parser.add_argument("--verbose", action="store_true", help="Enable verbose output")
     return parser.parse_args()
+
 
 def main():
     
@@ -23,13 +28,13 @@ def main():
 
     args = parse_args()
     contents = args.user_prompt
+    messages = [types.Content(role="user", parts=[types.Part(text=args.user_prompt)])]
 
     print(f"User Prompt: {contents}\n")
 
     try:
         response = client.models.generate_content(
-            model="gemini-2.5-flash",
-            contents=contents,
+            model="gemini-2.5-flash", contents=messages
         )
     except Exception as e:
         raise RuntimeError(f"Gemini API request failed: {e}") from e
