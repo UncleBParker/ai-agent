@@ -5,6 +5,8 @@ import argparse
 from dotenv import load_dotenv
 from google import genai
 from google.genai import types
+from prompts import system_prompt
+from config import TEMP
 
 
 load_dotenv()
@@ -15,6 +17,7 @@ if not api_key:
         ".env file or GEMINI_API_KEY object missing"
     )
 client = genai.Client(api_key=api_key)
+model_name = "gemini-2.5-flash"
 
 
 def parse_args():
@@ -35,7 +38,9 @@ def main():
 
     try:
         response = client.models.generate_content(
-            model="gemini-2.5-flash", contents=messages
+            model=model_name,
+            contents=messages,
+            config=types.GenerateContentConfig(system_instruction=system_prompt, temperature=TEMP),
         )
     except Exception as e:
         raise RuntimeError(f"Gemini API request failed: {e}") from e
