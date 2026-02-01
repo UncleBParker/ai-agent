@@ -2,6 +2,32 @@
 
 import os
 import sys
+from google.genai import types
+
+
+schema_write_file = types.FunctionDeclaration(
+    name="write_file",
+    description=f"Write a specified string to a specified file at a specified directory relative to the working directory. Create the specified file and parent directories if they do not exist, and overwrite the entire contents of the specified file if it does already exist.",
+    parameters=types.Schema(
+        type=types.Type.OBJECT,
+        properties={
+            "file_path": types.Schema(
+                type=types.Type.STRING,
+                description=(
+					"Directory path of the target file, relative to the working directory (providing only a file name will search for a file of that name in the working directory)."
+				),
+            ),
+			"content": types.Schema(
+                type=types.Type.STRING, 
+				description=(
+					"A string that will be written to the target file."
+				),
+            )
+        },
+		required=["file_path", "content"]
+    ),
+)
+
 
 def write_file(working_directory, file_path, content):
 	try:

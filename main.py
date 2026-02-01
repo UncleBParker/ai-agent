@@ -2,15 +2,16 @@
 
 import os
 import argparse
+import config
 from dotenv import load_dotenv
 from google import genai
 from google.genai import types
 from prompts import system_prompt
-from config import TEMP
+from call_function import available_functions
 
 
 load_dotenv()
-api_key = os.environ.get("GEMINI_API_KEY")
+api_key = os.environ.get("GEMINI_API_KEY" if config.KEY == 0 else "ALT_GEMINI_API_KEY")
 if not api_key:
     raise RuntimeError(
         "GEMINI_API_KEY environment variable not set. "
@@ -40,21 +41,26 @@ def main():
         response = client.models.generate_content(
             model=model_name,
             contents=messages,
-            config=types.GenerateContentConfig(system_instruction=system_prompt, temperature=TEMP),
+            config=types.GenerateContentConfig(system_instruction=system_prompt, temperature=config.TEMP, tools=[available_functions]),
         )
     except Exception as e:
         raise RuntimeError(f"Gemini API request failed: {e}") from e
     
     usage_metadata = response.usage_metadata
-    
+    func_calls = response.function_calls
+
     prompt_token_count = usage_metadata.prompt_token_count
     canidates_token_count = usage_metadata.candidates_token_count
 
-    if args.verbose:
-        print(f"\nUser prompt: {user_prompt}\n")   
-        print(f"Prompt tokens: {prompt_token_count}")
-        print(f"Response tokens: {canidates_token_count}\n")
-    print(f"Response:\n{response.text}\n")
+    if func_calls:
+        for call in func_calls:
+            print(f'Calling function: {call.name}({call.args})')
+    else:
+        if args.verbose:
+            print(f"\nUser prompt: {user_prompt}\n")   
+            print(f"Prompt tokens: {prompt_token_count}")
+            print(f"Response tokens: {canidates_token_count}\n")
+        print(f"Response:\n{response.text}\n")
 
 
 
