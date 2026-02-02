@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 from google import genai
 from google.genai import types
 from prompts import system_prompt
-from call_function import available_functions
+from call_function import available_functions, call_function
 
 
 load_dotenv()
@@ -53,8 +53,20 @@ def main():
     canidates_token_count = usage_metadata.candidates_token_count
 
     if func_calls:
+        function_results = []
         for call in func_calls:
-            print(f'Calling function: {call.name}({call.args})')
+            function_call_result = call_function(call, verbose=args.verbose)
+
+            if function_call_result.parts == []:
+                raise Exception(f'in function_call_result for "{call.name}": types.Content.parts is an empty list')
+            if function_call_result.parts[0].function_response == None:
+                raise Exception(f'in function_call_result for "{call.name}": FunctionResponse object is "None"')
+            if function_call_result.parts[0].function_response.response == None:
+                raise Exception(f'in function_call_result for "{call.name}": RunctionsResponse.response object is "None"')
+            function_results.append(function_call_result.parts[0])
+            
+            if args.verbose:
+                print(f"-> {function_call_result.parts[0].function_response.response}")
     else:
         if args.verbose:
             print(f"\nUser prompt: {user_prompt}\n")   
